@@ -1,22 +1,19 @@
-import logo from "./logo.svg";
+import React from "react";
 import "./App.css";
 import { Routes, Route } from "react-router-dom";
 import "@fontsource/chivo-mono";
 import "@fontsource/oswald";
 import Header from "./Components/Header";
-
-import { ChakraProvider, Heading, extendTheme } from "@chakra-ui/react";
-
+import ItemPage from "./Components/ItemPage";
+import { ChakraProvider, extendTheme } from "@chakra-ui/react";
+import HomePage from "./Pages/HomePage";
+import Footer from "./Components/Footer";
 const breakpoints = {
-  xs: "0px",
-  sm: "350px",
-  mds: "480px",
-  md: "600px",
-  mdl: "800px",
-  lg: "1020px",
-  xl: "1200px",
-  xxl: "1500px",
-  "2xl": "1850px",
+  sm: "480px",
+  md: "780px",
+  lg: "980px",
+  xlg: "1480px",
+  xl: "1800px",
 };
 
 const theme = extendTheme({
@@ -31,12 +28,69 @@ const theme = extendTheme({
     },
   },
   breakpoints,
+  color: {
+    blueLight: "#1ecbe1",
+  },
 });
 
 function App() {
+  const [favorites, setFavorites] = React.useState([]);
+  const [sort, setSort] = React.useState("down");
+  const [basket, setBasket] = React.useState([]);
+
+  const [computers, setComputer] = React.useState([]);
+  React.useEffect(() => {
+    fetch("https://dummyjson.com/products/category/laptops")
+      .then((res) => res.json())
+      .then((data) => {
+        setComputer(data.products);
+      });
+  }, []);
+
   return (
     <ChakraProvider theme={theme}>
-      <Header></Header>
+      {/* Header componnet */}
+      <Header
+        computers={computers}
+        favorites={favorites}
+        basket={basket}
+        setBasket={setBasket}
+      ></Header>
+      <Routes>
+        {/* HomePage */}
+        <Route
+          path="/"
+          element={
+            <HomePage
+              favorites={favorites}
+              setFavorite={setFavorites}
+              computer={computers}
+              setComputer={setComputer}
+              setSort={setSort}
+              sort={sort}
+              basket={basket}
+              setBasket={setBasket}
+            />
+          }
+        ></Route>
+        {/* Item pages */}
+        {computers.map((computer, index) => {
+          return (
+            <Route
+              key={index}
+              path={`/${computer.id}`}
+              element={
+                <ItemPage
+                  basket={basket}
+                  setBasket={setBasket}
+                  computer={computer}
+                ></ItemPage>
+              }
+            ></Route>
+          );
+        })}
+      </Routes>
+      <Footer></Footer>
     </ChakraProvider>
   );
 }
